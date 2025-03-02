@@ -1,178 +1,53 @@
 #!/usr/bin/env python
 import asyncio
-from typing import List, Optional
+from typing import List
 import datetime  # Add this import for timestamp
 
-from crewai.flow.flow import Flow, listen, start, router
+from crewai.flow.flow import Flow, listen, start
 from pydantic import BaseModel
 
 from self_evaluation_loop_flow.crews.book_chapter_crew.book_chapter_crew import (
     WriteBookChapterCrew,
 )
 from self_evaluation_loop_flow.Types import Chapter, ChapterOutline
-from self_evaluation_loop_flow.crews.book_outline_review_crew.book_outline_review_crew import (
-    BookOutlineReviewCrew,
-)
 
 from .crews.book_outline_crew.book_outline_crew import BookOutlineCrew
 
 
 class BookState(BaseModel):
-    title: str = "Dreamwalkers of the Dystopian Future"
+    title: str = "The Current State of AI in September 2024"
     book: List[Chapter] = []
     book_outline: List[ChapterOutline] = []
     topic: str = (
-        "A dystopian future where the government controls all forms of media and information, and the people are kept in a state of constant surveillance and control."
+        "Exploring the latest trends in AI across different industries as of September 2024"
     )
-    plot: str = (
-        "In the aftermath of a devastating global catastrophe, humanity's survival depends on "
-        "genetically engineered superhumans like Eve, who has been tasked with repopulating Earth. "
-        "As Eve begins her mission, she discovers an unexpected evolution in human biology: "
-        "telepathy has emerged among survivors.\n\n"
-        "The government, led by the ruthless Puppet Master (Lucian Fez), has outlawed telepathy, "
-        "fearing its potential to destabilize their control. In this oppressive society where "
-        "privacy is paramount, Eve encounters Luna, the charismatic leader of the Dreamwalkers—an "
-        "underground group of psychics who can navigate and manipulate dreams to bypass the "
-        "telepathically-shielded society.\n\n"
-        "As Eve delves deeper into the world of the Dreamwalkers, she finds herself caught between "
-        "her duty to repopulate Earth and her growing loyalty to these persecuted psychics. "
-        "Meanwhile, she discovers shocking truths about her own origins: she was created using DNA "
-        "from Lucian Fez's late wife, Iris, making her genetically related to Lucian's daughter, "
-        "Lady Seraphina Fez—a powerful telepath who secretly hides her abilities from her father.\n\n"
-        "Eve and Luna must ultimately join forces to expose the Puppet Master's nefarious plans "
-        "and fight for a world where telepathy is accepted rather than persecuted. Their journey "
-        "becomes a battle for the very definition of humanity in this post-apocalyptic world, "
-        "challenging notions of identity, connection, and resilience in the face of overwhelming "
-        "opposition."
-    )
-    characters: str = ("""
-    Eve (22):
-    - A genetically engineered superhuman with enhanced strength, speed, and durability
-    - Created using DNA from Lucian's late wife Iris, making her related to Seraphina Fez
-    - Tall with an athletic build, golden skin, wild curly brown hair, and piercing emerald eyes
-    - Wears a sleek black and silver jumpsuit with integrated armor and circuitry patterns
-    - Compassionate and determined, driven by her duty to humanity
-    - Struggles with understanding telepathy and finding her place in the new world
-    - Primary motivation: To escape government control and forge her own identity
-
-    Luna (Mid-30s):
-    - Enigmatic leader of the Dreamwalkers and former government operative
-    - Defected upon discovering the truth about telepathy and the regime's plans
-    - Intelligent, resourceful, and fiercely loyal to her fellow Dreamwalkers
-    - Determined to protect her people and expose government corruption
-    - Her mysterious past adds complexity to the narrative
-
-    Lucian Fez (Late 40s) - The Puppet Master:
-    - Ruthless government official leading the crusade against telepathy
-    - Cold, calculating and consumed by paranoia regarding psychic abilities
-    - Born into privilege as son of Marcellus Fez, a high-ranking official
-    - Childhood trauma: His sister Elara was a telepath who died under their father's cruel "treatment"
-    - Adult trauma: His beloved wife Iris (a telepath) died after being experimented on
-    - Driven by fear, paranoia, and unresolved guilt about his sister and wife
-    - Views all telepaths as threats that must be eliminated
-
-    Lady Seraphina Fez (Early 20s):
-    - Daughter of Lucian Fez and a brilliant telepath with exceptional powers
-    - Keeps her abilities secret from her father out of fear
-    - Raised in privilege but empathetic and yearning for freedom
-    - Deeply conflicted between loyalty to her father and her telepathic nature
-    - Genetically related to Eve through her mother Iris's DNA
-
-    Secondary Characters:
-
-    Leonardo Moreno (Late 30s):
-    - Senior official in the Ministry of Psychic Affairs
-    - Staunch supporter of Lucian's anti-telepathy policies
-    - Secret admirer of Lady Seraphina
-    - Begins questioning the morality of the government's actions
-    - Caught between his loyalty to Lucian and his feelings for Seraphina
-
-    The Dreamwalkers (The Dream Legion):
-
-    Alaric (Late 20s):
-    - Skilled in entering and controlling dreams with precision
-    - Calm, collected, and possesses deep knowledge of the dreamscape
-    - Expert fighter from years of secret training
-    - Struggles with trust issues and develops complicated feelings for Eve
-    - Intensely loyal to the Dreamwalkers
-
-    Zara (Early 20s):
-    - Mind-reading Dreamwalker with strong empathic abilities
-    - Can sense others' thoughts and emotions
-    - Expert in psychological warfare and intelligence gathering
-    - Fiery, passionate, and deeply compassionate
-    - Becomes Eve's emotional confidante and guide
-
-    Kai (Mid-20s):
-    - Charismatic Dreamwalker who projects himself into others' dreams
-    - Strategic thinker crucial in protecting fellow Dreamwalkers
-    - Charming, confident, and intensely curious about the dream world
-    - Provides comic relief and contrasts with Alaric's serious nature
-    - Driven by wonder and desire for adventure
+    goal: str = """
+        The goal of this book is to provide a comprehensive overview of the current state of artificial intelligence in September 2024.
+        It will delve into the latest trends impacting various industries, analyze significant advancements,
+        and discuss potential future developments. The book aims to inform readers about cutting-edge AI technologies
+        and prepare them for upcoming innovations in the field.
     """
-    )
-    feedback: Optional[str] = None
-    valid: bool = False
-    retry_count: int = 0
 
 
 class BookFlow(Flow[BookState]):
     initial_state = BookState
 
-    @start("retry")
+    @start()
     def generate_book_outline(self):
         print("Kickoff the Book Outline Crew")
         output = (
             BookOutlineCrew()
             .crew()
-            .kickoff(inputs={"topic": self.state.topic, "plot": self.state.plot, "characters": self.state.characters, "feedback": self.state.feedback})
+            .kickoff(inputs={"topic": self.state.topic, "goal": self.state.goal})
         )
+
         chapters = output["chapters"]
         print("Chapters:", chapters)
 
         self.state.book_outline = chapters
         return chapters
-    
-    @router(generate_book_outline)
-    def evaluate_book_outline(self):
-        if self.state.retry_count > 3:
-            return "max_retry_exceeded"
 
-        result = BookOutlineReviewCrew().crew().kickoff(inputs={"book_outline": self.state.book_outline})
-        self.state.valid = result["valid"]
-        self.state.feedback = result["feedback"]
-
-        print("valid", self.state.valid)
-        print("feedback", self.state.feedback)
-        self.state.retry_count += 1
-
-        if self.state.valid:
-            return "completed"
-
-        print("RETRY")
-        return "retry" 
-    
-    @listen("completed")
-    def save_result(self):
-        print("Book outline is valid")
-        print("Book outline:", self.state.book_outline)
-
-        # Save the valid book outline to a file
-        with open("book_outline.txt", "w") as file:
-            # Convert the list of ChapterOutline objects to a string representation
-            outline_text = ""
-            for i, chapter in enumerate(self.state.book_outline, 1):
-                outline_text += f"Chapter {i}: {chapter.title}\n"
-                outline_text += f"Description: {chapter.description}\n\n"
-            file.write(outline_text)
-
-    @listen("max_retry_exceeded")
-    def max_retry_exceeded_exit(self):
-        print("Max retry count exceeded")
-        print("Book outline:", self.state.book_outline)
-        print("Feedback:", self.state.feedback)
-
-    @listen("completed")
+    @listen(generate_book_outline)
     async def write_chapters(self):
         print("Writing Book Chapters")
         tasks = []
@@ -183,7 +58,7 @@ class BookFlow(Flow[BookState]):
                 .crew()
                 .kickoff(
                     inputs={
-                        "plot": self.state.plot,
+                        "goal": self.state.goal,
                         "topic": self.state.topic,
                         "chapter_title": chapter_outline.title,
                         "chapter_description": chapter_outline.description,

@@ -1,0 +1,21 @@
+write_chapter:
+  description: >
+    Write a well-structured chapter based on the chapter title, plot, and outline description. 
+    Each chapter should be written in markdown and should contain around 3,000 words.
+
+    Here is the topic for the book: {topic}
+    Here is the title of the chapter: {chapter_title}
+    Here is the plot for the book: {plot}
+    Here is the outline description for the chapter:\n\n {chapter_description}
+
+    Important notes:
+    - The chapter should be engaging, well-structured, and consistent with the overall tone and style of the book.
+    - Include vivid descriptions, compelling dialogue, and character development where appropriate.
+    - Ensure the chapter advances the overall narrative while focusing on the specific events and themes outlined in the chapter description.
+    - The chapter you are writing needs to fit in well with the rest of the chapters in the book.
+
+    Here is the outline of the entire book:\n\n
+    {book_outline}
+  expected_output: >
+    A markdown-formatted chapter of around 3,000 words that covers the provided chapter title and outline description.
+  agent: writer

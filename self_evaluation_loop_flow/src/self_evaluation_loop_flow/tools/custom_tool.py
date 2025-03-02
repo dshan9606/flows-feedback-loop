@@ -1,6 +1,6 @@
 from typing import Type
 
-from crewai_tools import BaseTool
+from crewai.tools.base_tool import BaseTool
 from pydantic import BaseModel, Field
 
 

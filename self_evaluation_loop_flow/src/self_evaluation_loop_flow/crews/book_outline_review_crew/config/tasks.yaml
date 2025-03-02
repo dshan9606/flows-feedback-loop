@@ -1,0 +1,10 @@
+review_outline:
+  description: >
+    Review the provided book outline and evaluate its quality, coherence, and structure.
+    Provide detailed feedback on what works well and what needs improvement.
+    Determine if the outline is valid and ready for chapter writing.
+  expected_output: >
+    A detailed review of the book outline with specific feedback on its strengths and weaknesses.
+    A clear determination of whether the outline is valid (true/false) and ready for chapter writing.
+    If not valid, provide specific suggestions for improvement.
+  agent: reviewer 
